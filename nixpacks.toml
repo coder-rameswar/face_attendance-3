@@ -1,8 +1,5 @@
-# opencv-python-headless bundles its own native libraries,
-# so no extra system packages are needed.
-
 [phases.install]
-cmds = ["pip install -r requirements.txt"]
+cmds = ["python -m pip install --upgrade pip", "python -m pip install -r requirements.txt"]
 
 [start]
 cmd = "gunicorn wsgi:app --workers 2 --bind 0.0.0.0:$PORT --timeout 120"
