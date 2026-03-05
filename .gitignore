@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# Environment
+.env
+
+# Face data & model (large binary files - store on server directly)
+face_data/
+trained_model/
+
+# Flask
+instance/
+*.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads
+static/uploads/
