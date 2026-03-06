@@ -8,7 +8,7 @@ import bcrypt
 
 from config import SECRET_KEY, FACE_DATA_DIR, MODEL_DIR
 from db import execute_query, init_db
-from face_engine import capture_face_samples, train_model, recognize_and_attend
+# face_engine imported lazily per-route (avoid crash on import if cv2 missing)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -43,7 +43,8 @@ def login_required(f):
 # ============================================================
 @app.route('/health')
 def health():
-    return {'status': 'ok'}, 200
+    """Lightweight health check — no DB call so it always responds fast."""
+    return {'status': 'ok', 'service': 'face-attendance'}, 200
 
 
 # ============================================================
