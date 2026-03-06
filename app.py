@@ -4,19 +4,36 @@ from functools import wraps
 import os
 import logging
 from datetime import date, datetime
-import bcrypt
-
-from config import SECRET_KEY, FACE_DATA_DIR, MODEL_DIR
-from db import execute_query, init_db
-# face_engine imported lazily per-route (avoid crash on import if cv2 missing)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# --- Safe imports (won't crash startup if env vars missing) ---
+try:
+    import bcrypt
+except ImportError:
+    bcrypt = None
+
+try:
+    from config import SECRET_KEY, FACE_DATA_DIR, MODEL_DIR
+except Exception as e:
+    logger.warning(f"config import warning: {e}")
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-dev-key')
+    FACE_DATA_DIR = '/app/face_data'
+    MODEL_DIR = '/app/trained_model'
+
+try:
+    from db import execute_query, init_db
+except Exception as e:
+    logger.error(f"db import error: {e}")
+    raise
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static', 'uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(FACE_DATA_DIR, exist_ok=True)
+os.makedirs(MODEL_DIR, exist_ok=True)
 
 
 @app.context_processor
@@ -42,9 +59,9 @@ def login_required(f):
 # HEALTH CHECK (required by Railway)
 # ============================================================
 @app.route('/health')
+@app.route('/ping')
 def health():
-    """Lightweight health check — no DB call so it always responds fast."""
-    return {'status': 'ok', 'service': 'face-attendance'}, 200
+    return 'ok', 200
 
 
 # ============================================================
